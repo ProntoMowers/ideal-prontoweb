@@ -1,0 +1,15 @@
+node_modules/
+.env
+logs/
+data/
+uploads/
+*.log
+.DS_Store
+
+# certificados / llaves
+*.key
+*.cert
+*.pem
+
+# pm2 logs (si los generas en archivos)
+pids/

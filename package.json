@@ -1,0 +1,25 @@
+{
+  "name": "ideal-product-migrator",
+  "version": "1.0.0",
+  "description": "Migración de tabla PRODUCT desde IDEAL (Firebird) a MySQL (product).",
+  "main": "src/migrateProductIdeal.js",
+  "scripts": {
+    "migrate": "node src/migrateProductIdeal.js"
+  },
+  "author": "Pronto Mowers",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "csv-parse": "^6.1.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "fast-csv": "^5.0.5",
+    "form-data": "^4.0.5",
+    "mongodb": "^7.0.0",
+    "mssql": "^12.2.0",
+    "multer": "^2.0.2",
+    "mysql2": "^3.16.0",
+    "node-firebird": "*"
+  }
+}
