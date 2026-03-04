@@ -158,6 +158,17 @@ module.exports = {
 	  time: true,
 	  env: { NODE_ENV: 'production' },
 	},
+	// 01:00 - SYNC VIP CUSTOMERS TO RESPOND.IO
+	{
+	  name: 'ideal-sync-vip-respondio',
+	  cwd: 'C:/scripts/ideal-prontoweb',
+	  script: 'src/syncVipCustomersRespondIo.js',
+	  watch: false,
+	  autorestart: false,
+	  cron_restart: '0 1 * * *', // 01:00 AM todos los días
+	  time: true,
+	  env: { NODE_ENV: 'production' },
+	},
     // --- NUEVA API MULTIPROPÓSITO ---
     {
       name: 'prontoweb-api',
