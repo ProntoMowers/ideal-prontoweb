@@ -25,8 +25,7 @@ async function migrateProductStock() {
     const startTime = Date.now();
     const fbBatchSize = parseInt(process.env.FB_BATCH_SIZE || '5000', 10);
     const mysqlBatchSize = parseInt(process.env.MYSQL_BATCH_SIZE || '1000', 10);
-    // Agrega esta variable a tu .env si deseas limpieza total: FULL_REFRESH_PRODUCTSTOCK=true
-    const fullRefresh = (process.env.FULL_REFRESH_PRODUCTSTOCK || 'false').toLowerCase() === 'true';
+    const fullRefresh = (process.env.FULL_REFRESH_PRODUCTSTOCK || 'true').toLowerCase() === 'true';
 
     let fbDb, mysqlConn;
 

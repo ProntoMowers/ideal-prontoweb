@@ -133,7 +133,7 @@ async function migratePOReceipts() {
   const startTime = Date.now();
   const fbBatchSize = parseInt(process.env.FB_BATCH_SIZE || '5000', 10);
   const mysqlBatchSize = parseInt(process.env.MYSQL_BATCH_SIZE || '1000', 10);
-  const fullRefresh = (process.env.FULL_REFRESH_PORECEIPT || 'false').toLowerCase() === 'true';
+  const fullRefresh = (process.env.FULL_REFRESH_PORECEIPT || 'true').toLowerCase() === 'true';
 
   log.info('🚀 Iniciando migración de PORECEIPT + PORECEIPTDETAIL (Firebird) → MySQL...');
   log.info(`⚙️  FB_BATCH_SIZE = ${fbBatchSize}, MYSQL_BATCH_SIZE = ${mysqlBatchSize}`);

@@ -59,7 +59,7 @@ async function migrateAPTrans() {
     const startTime = Date.now();
     const fbBatchSize = parseInt(process.env.FB_BATCH_SIZE || '5000', 10);
     const mysqlBatchSize = parseInt(process.env.MYSQL_BATCH_SIZE || '1000', 10);
-    const fullRefresh = (process.env.FULL_REFRESH_APTRANS || 'false').toLowerCase() === 'true';
+    const fullRefresh = (process.env.FULL_REFRESH_APTRANS || 'true').toLowerCase() === 'true';
 
     let fbDb, mysqlConn;
 

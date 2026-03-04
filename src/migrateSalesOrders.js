@@ -181,7 +181,7 @@ async function migrateSalesOrders() {
   const startTime = Date.now();
   const fbBatchSize = parseInt(process.env.FB_BATCH_SIZE || '5000', 10);
   const mysqlBatchSize = parseInt(process.env.MYSQL_BATCH_SIZE || '1000', 10);
-  const fullRefresh = (process.env.FULL_REFRESH_SALESORDER || 'false').toLowerCase() === 'true';
+  const fullRefresh = (process.env.FULL_REFRESH_SALESORDER || 'true').toLowerCase() === 'true';
 
   log.info('🚀 Iniciando migración de SALESORDER + SALESORDERDETAIL (Firebird) → MySQL...');
   log.info(`⚙️  FB_BATCH_SIZE = ${fbBatchSize}, MYSQL_BATCH_SIZE = ${mysqlBatchSize}`);

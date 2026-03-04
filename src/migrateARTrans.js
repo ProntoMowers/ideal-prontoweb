@@ -59,7 +59,7 @@ async function migrateARTrans() {
     const startTime = Date.now();
     const fbBatchSize = parseInt(process.env.FB_BATCH_SIZE || '50000', 10);
     const mysqlBatchSize = parseInt(process.env.MYSQL_BATCH_SIZE || '10000', 10);
-    const fullRefresh = (process.env.FULL_REFRESH_ARTRANS || 'false').toLowerCase() === 'true';
+    const fullRefresh = (process.env.FULL_REFRESH_ARTRANS || 'true').toLowerCase() === 'true';
 
     let fbDb, mysqlConn;
 

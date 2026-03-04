@@ -1,7 +1,10 @@
 // src/migrateProductIdeal.js
 /**
  * MIGRACIÓN DE PRODUCTOS DESDE IDEAL (Firebird) A MySQL (tabla product)
- * Diseñado para tablas grandes: lectura por lotes desde Firebird y escritura por lotes en MySQL.
+ * 
+ * - Diseñado para tablas grandes: lectura por lotes desde Firebird y escritura por lotes en MySQL
+ * - FULL REFRESH opcional (TRUNCATE tabla antes de migrar)
+ * - UPSERT: actualiza si existe, inserta si no existe
  */
 
 require('dotenv').config();
@@ -83,9 +86,11 @@ async function migrateProductIdeal() {
   const startTime = Date.now();
   const fbBatchSize = parseInt(process.env.FB_BATCH_SIZE || '5000', 10);
   const mysqlBatchSize = parseInt(process.env.MYSQL_BATCH_SIZE || '1000', 10);
+  const fullRefresh = (process.env.FULL_REFRESH_PRODUCT || 'true').toLowerCase() === 'true';
 
   log.info('🚀 Iniciando migración de PRODUCT (Firebird) → product (MySQL)...');
   log.info(`⚙️  FB_BATCH_SIZE = ${fbBatchSize}, MYSQL_BATCH_SIZE = ${mysqlBatchSize}`);
+  log.info(`⚙️  FULL_REFRESH_PRODUCT = ${fullRefresh}`);
 
   let fbDb = null;
   let mysqlConn = null;
@@ -100,6 +105,15 @@ async function migrateProductIdeal() {
     log.info('🔌 Conectando a MySQL...');
     mysqlConn = await getMySqlConnection();
     log.info('✅ Conectado a MySQL.');
+
+    // FULL REFRESH: truncar tabla si está habilitado
+    if (fullRefresh) {
+      log.info('🧹 FULL REFRESH activado: deshabilitar FK y truncar tabla product...');
+      await mysqlConn.query('SET FOREIGN_KEY_CHECKS = 0');
+      await mysqlConn.query('TRUNCATE TABLE product');
+      await mysqlConn.query('SET FOREIGN_KEY_CHECKS = 1');
+      log.info('✅ Tabla product vaciada completamente.');
+    }
 
     // Preparar sentencia INSERT con ON DUPLICATE KEY UPDATE
     const columnList = COLUMNS.map(c => `\`${c}\``).join(', ');
