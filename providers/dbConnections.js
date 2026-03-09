@@ -3,6 +3,7 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 const Firebird = require('node-firebird');
 const mssql = require('mssql');
+const { Pool } = require('pg');
 
 async function getMySqlConnection() {
   const conn = await mysql.createConnection({
@@ -61,9 +62,29 @@ async function getMssqlConnection() {
   return await mssql.connect(config);
 }
 
+// PostgreSQL Connection Pool
+let pgPool = null;
+
+function getPostgresPool() {
+  if (!pgPool) {
+    pgPool = new Pool({
+      host: process.env.PG_HOST,
+      port: Number(process.env.PG_PORT || 5432),
+      user: process.env.PG_USER,
+      password: process.env.PG_PASSWORD,
+      database: process.env.PG_DATABASE,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
+  }
+  return pgPool;
+}
+
 module.exports = {
   getMySqlConnection,
   getFirebirdConnection,
   getMssqlConnection,
+  getPostgresPool,
   fbQuery,
 };

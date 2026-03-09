@@ -169,17 +169,17 @@ module.exports = {
 	  time: true,
 	  env: { NODE_ENV: 'production' },
 	},
-    // --- NUEVA API MULTIPROPÓSITO ---
+    // --- UNIFIED API SERVER ---
     {
       name: 'prontoweb-api',
       cwd: 'C:/scripts/ideal-prontoweb',
-      script: 'src/submitReturn.js', // Tu script principal de la API
-      watch: false,                 // Habilitado para que reinicie si editas el código
-      autorestart: true,           // Siempre activo
+      script: 'server.js',         // Unified API server
+      watch: false,
+      autorestart: true,           // Always running
       time: true,
       env: {
         NODE_ENV: 'production',
-        PORT: 3001                 // Puerto interno para el Reverse Proxy del IIS
+        PORT: 3001                 // Production port
       },
     },
   ],

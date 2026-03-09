@@ -1,0 +1,229 @@
+{
+  "info": {
+    "name": "Parts Availability API",
+    "description": "API para resolver equivalencias de productos y consultar inventario",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "your_api_key_here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Resolve Parts - Single SKU",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"storeId\": 5,\n  \"locationId\": 4,\n  \"products\": [\n    {\n      \"brand\": \"BRIGGS & STRATTON\",\n      \"sku\": \"BRIGGS 492932S\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/parts/availability/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "parts", "availability", "resolve"]
+        }
+      }
+    },
+    {
+      "name": "Resolve Parts - Single MPN",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"storeId\": 5,\n  \"locationId\": 4,\n  \"products\": [\n    {\n      \"brand\": \"BRIGGS & STRATTON\",\n      \"mpn\": \"492932S\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/parts/availability/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "parts", "availability", "resolve"]
+        }
+      }
+    },
+    {
+      "name": "Resolve Parts - Batch",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"storeId\": 5,\n  \"locationId\": 4,\n  \"products\": [\n    {\n      \"brand\": \"BRIGGS & STRATTON\",\n      \"sku\": \"BRIGGS 492932S\"\n    },\n    {\n      \"brand\": \"BRIGGS & STRATTON\",\n      \"mpn\": \"492932S\"\n    },\n    {\n      \"brand\": \"HONDA\",\n      \"sku\": \"HONDA 12345\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/parts/availability/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "parts", "availability", "resolve"]
+        }
+      }
+    },
+    {
+      "name": "Test 401 - No API Key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"storeId\": 5,\n  \"locationId\": 4,\n  \"products\": [\n    {\n      \"brand\": \"BRIGGS & STRATTON\",\n      \"sku\": \"BRIGGS 492932S\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/parts/availability/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "parts", "availability", "resolve"]
+        }
+      }
+    },
+    {
+      "name": "Test 401 - Invalid API Key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "invalid_key"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"storeId\": 5,\n  \"locationId\": 4,\n  \"products\": [\n    {\n      \"brand\": \"BRIGGS & STRATTON\",\n      \"sku\": \"BRIGGS 492932S\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/parts/availability/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "parts", "availability", "resolve"]
+        }
+      }
+    },
+    {
+      "name": "Test 400 - Missing storeId",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"locationId\": 4,\n  \"products\": [\n    {\n      \"brand\": \"BRIGGS & STRATTON\",\n      \"sku\": \"BRIGGS 492932S\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/parts/availability/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "parts", "availability", "resolve"]
+        }
+      }
+    },
+    {
+      "name": "Test 400 - Empty products array",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"storeId\": 5,\n  \"locationId\": 4,\n  \"products\": []\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/parts/availability/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "parts", "availability", "resolve"]
+        }
+      }
+    },
+    {
+      "name": "Test 400 - Missing sku and mpn",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"storeId\": 5,\n  \"locationId\": 4,\n  \"products\": [\n    {\n      \"brand\": \"BRIGGS & STRATTON\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/parts/availability/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "parts", "availability", "resolve"]
+        }
+      }
+    }
+  ]
+}

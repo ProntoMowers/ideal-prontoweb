@@ -4,7 +4,9 @@
   "description": "Migración de tabla PRODUCT desde IDEAL (Firebird) a MySQL (product).",
   "main": "src/migrateProductIdeal.js",
   "scripts": {
-    "migrate": "node src/migrateProductIdeal.js"
+    "migrate": "node src/migrateProductIdeal.js",
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "author": "Pronto Mowers",
   "license": "MIT",
@@ -20,6 +22,7 @@
     "mssql": "^12.2.0",
     "multer": "^2.0.2",
     "mysql2": "^3.16.0",
-    "node-firebird": "*"
+    "node-firebird": "*",
+    "pg": "^8.20.0"
   }
 }

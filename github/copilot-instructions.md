@@ -10,15 +10,243 @@ Este proyecto es un **sistema de migración y sincronización de datos** para Pr
 - **Firebird (IDEAL ERP)**: Sistema fuente con datos maestros de productos, clientes, ventas, inventario y contabilidad
 - **MySQL**: Base de datos destino principal para el sistema web
 - **MS SQL Server (ShipWorks)**: Base de datos auxiliar para integraciones de envíos
+- **PostgreSQL**: Base de datos para matching de productos
 
 ### Tecnologías Principales
 - **Node.js** con dependencias:
   - `node-firebird`: Conexión a Firebird (IDEAL)
   - `mysql2`: Conexión a MySQL
   - `mssql`: Conexión a MS SQL Server
+  - `pg`: Conexión a PostgreSQL
   - `express`: API REST
   - `axios`: Integración con APIs externas (Zoho Desk)
   - `pm2/ecosystem.config.js`: Gestión de procesos y cron jobs
+
+## Estructura de la API REST Unificada
+
+El proyecto cuenta con una **API REST unificada** que corre en puerto 3001 (producción) y consolida múltiples servicios en un solo servidor Express.
+
+### Servidor Principal: `server.js`
+
+Servidor Express que gestiona:
+- Middleware (CORS, JSON parsing, logging)
+- Health check endpoint
+- Enrutamiento a múltiples servicios
+- Manejo centralizado de errores
+- Inicio/apagado graceful del servidor
+
+### Arquitectura de Endpoints (Patrón MVC)
+
+Cada endpoint sigue una estructura modular de 3 capas:
+
+```
+/routes/         → Define rutas y middleware específico
+/controllers/    → Maneja requests/responses HTTP
+/services/       → Lógica de negocio y acceso a datos
+```
+
+#### Endpoints Disponibles
+
+1. **Parts Availability API** (`/v1/parts/availability/resolve`)
+   - **Route**: `routes/partsAvailability.js`
+   - **Controller**: `controllers/partsAvailabilityController.js`
+   - **Service**: `services/partsAvailabilityService.js`
+   - **Middleware**: `middleware/apiKeyAuth.js` (requiere x-api-key)
+   - **Propósito**: Consultar disponibilidad de partes en inventario
+
+2. **Returns API** (`/v1/returns/submit`)
+   - **Route**: `routes/returns.js`
+   - **Controller**: `controllers/returnsController.js`
+   - **Service**: `services/returnsService.js`
+   - **Middleware**: Multer para manejo de archivos (hasta 10 imágenes)
+   - **Propósito**: Procesar devoluciones de productos con integración a Zoho Desk
+
+### Cómo Agregar un Nuevo Endpoint
+
+Cuando se solicite crear un nuevo endpoint, seguir este patrón establecido:
+
+#### 1. Crear el Route (routes/nombreServicio.js)
+```javascript
+// routes/nombreServicio.js
+const express = require('express');
+const router = express.Router();
+const nombreServicioController = require('../controllers/nombreServicioController');
+const apiKeyAuth = require('../middleware/apiKeyAuth'); // Si requiere autenticación
+
+// Define tus rutas
+router.post('/v1/nombre-servicio/accion', apiKeyAuth, nombreServicioController.metodo);
+router.get('/v1/nombre-servicio/:id', nombreServicioController.obtener);
+
+module.exports = router;
+```
+
+#### 2. Crear el Controller (controllers/nombreServicioController.js)
+```javascript
+// controllers/nombreServicioController.js
+const nombreServicioService = require('../services/nombreServicioService');
+const logger = require('../helpers/logger')('nombreServicioController.log');
+
+/**
+ * Descripción del endpoint
+ */
+async function metodo(req, res) {
+  try {
+    // 1. Validar parámetros requeridos
+    const { campo1, campo2 } = req.body;
+    
+    if (!campo1 || !campo2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields'
+      });
+    }
+
+    // 2. Llamar al service
+    const result = await nombreServicioService.procesarDatos(campo1, campo2);
+    
+    logger.info(`Operación exitosa: ${result.id}`);
+    
+    // 3. Responder
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    logger.error('Error en metodo', error);
+    
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Internal server error'
+      });
+    }
+  }
+}
+
+module.exports = {
+  metodo
+};
+```
+
+#### 3. Crear el Service (services/nombreServicioService.js)
+```javascript
+// services/nombreServicioService.js
+const { getMySqlConnection, getPostgresPool } = require('../providers/dbConnections');
+const logger = require('../helpers/logger')('nombreServicioService.log');
+
+/**
+ * Lógica de negocio
+ */
+async function procesarDatos(campo1, campo2) {
+  let mysqlConn;
+  
+  try {
+    mysqlConn = await getMySqlConnection();
+    
+    // Lógica de negocio aquí
+    const [rows] = await mysqlConn.execute(
+      'SELECT * FROM tabla WHERE campo = ?',
+      [campo1]
+    );
+    
+    logger.info(`Procesados ${rows.length} registros`);
+    
+    return {
+      id: 123,
+      data: rows
+    };
+
+  } catch (error) {
+    logger.error('Error en procesarDatos', error);
+    throw error;
+  } finally {
+    if (mysqlConn) {
+      await mysqlConn.end();
+    }
+  }
+}
+
+module.exports = {
+  procesarDatos
+};
+```
+
+#### 4. Registrar en server.js
+```javascript
+// server.js
+const nombreServicioRoutes = require('./routes/nombreServicio');
+
+// En la sección de rutas
+app.use('/', nombreServicioRoutes);
+
+// Actualizar health check
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    endpoints: [
+      'GET /health',
+      'POST /v1/parts/availability/resolve',
+      'POST /v1/returns/submit',
+      'POST /v1/nombre-servicio/accion'  // Agregar nuevo endpoint
+    ]
+  });
+});
+
+// Actualizar console.log en startup
+console.log(`📍 Nombre Servicio: POST http://localhost:${PORT}/v1/nombre-servicio/accion`);
+```
+
+#### 5. Actualizar Documentación
+- Agregar endpoint a `API_README.md`
+- Documentar parámetros, respuestas y ejemplos
+- Crear tests si es necesario
+
+#### 6. Testing
+- Crear archivo de test similar a `test-parts-availability.js`
+- Probar validaciones, casos exitosos y manejo de errores
+- Verificar que todos los tests pasen
+
+### Convenciones para Nuevos Endpoints
+
+1. **Versionado**: Usar `/v1/` en todas las rutas
+2. **Nombres**: kebab-case para URLs (ej: `/submit-return`, `/parts-availability`)
+3. **Métodos HTTP**:
+   - GET para consultas
+   - POST para creación/procesamiento
+   - PUT para actualizaciones
+   - DELETE para eliminaciones
+4. **Respuestas**: Siempre incluir `success: true/false`
+5. **Errores**: Usar códigos HTTP apropiados (400, 401, 404, 500)
+6. **Logging**: Logger separado por servicio/controller
+7. **Validación**: Siempre validar inputs en el controller
+8. **Seguridad**: Usar middleware de autenticación si es necesario
+
+### Deployment con PM2
+
+El servidor unificado corre como un solo proceso PM2:
+
+```javascript
+// ecosystem.config.js
+{
+  name: 'prontoweb-api',
+  script: 'server.js',
+  autorestart: true,
+  env: {
+    NODE_ENV: 'production',
+    PORT: 3001
+  }
+}
+```
+
+Comandos:
+```bash
+pm2 start ecosystem.config.js --only prontoweb-api
+pm2 restart prontoweb-api
+pm2 logs prontoweb-api
+```
 
 ## Estructura del Código
 
@@ -52,12 +280,12 @@ Ejecutan diariamente en horarios específicos:
 13. **00:45** - `reportCancellationSummary.js`: Reporte de cancelaciones
 14. **01:00** - `syncVipCustomersRespondIo.js`: Sincronización de clientes VIP a Respond.io
 
-#### API REST (Activa 24/7)
-- **`submitReturn.js`**: API Express en puerto 3001
-  - POST `/submit-return`: Crea tickets de devolución en Zoho Desk
-  - Integración con Zoho OAuth2
-  - Manejo de archivos adjuntos (multer)
-  - Guarda registros en MySQL
+#### API REST Unificada (Activa 24/7)
+- **`server.js`**: API Express unificada en puerto 3001
+  - Múltiples endpoints organizados por servicios
+  - Ver sección "Estructura de la API REST Unificada" para detalles
+  - Patrón MVC (Routes → Controllers → Services)
+  - Integración con Zoho Desk, bases de datos MySQL/PostgreSQL
 
 #### Scripts de Sincronización
 - **`syncVipCustomersRespondIo.js`**: Sincroniza clientes VIP con Respond.io
