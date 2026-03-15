@@ -96,6 +96,16 @@ module.exports = {
       env: { NODE_ENV: 'production' },
     },
     {
+      name: 'ideal-migrate-stockunit',
+      cwd: 'C:/scripts/ideal-prontoweb',
+      script: 'src/migrateStockUnit.js',
+      watch: false,
+      autorestart: false,
+      cron_restart: '35 23 * * *', // 23:35
+      time: true,
+      env: { NODE_ENV: 'production' },
+    },
+    {
       name: 'ideal-migrate-workorders',
       cwd: 'C:/scripts/ideal-prontoweb',
       script: 'src/migrateWorkOrders.js',

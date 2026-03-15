@@ -130,7 +130,8 @@ async function findContact(email, phone) {
     // Intentar buscar por email primero
     if (email && email.trim()) {
       try {
-        const response = await axios.get(`${RESPONDIO_API_URL}/contact/${email}`, {
+        const identifier = `email:${email}`;
+        const response = await axios.get(`${RESPONDIO_API_URL}/contact/${identifier}`, {
           headers: {
             'Authorization': `Bearer ${RESPONDIO_ACCESS_TOKEN}`,
             'Content-Type': 'application/json'
@@ -149,7 +150,8 @@ async function findContact(email, phone) {
     // Si no encontró por email, intentar por teléfono
     if (phone && phone.trim()) {
       try {
-        const response = await axios.get(`${RESPONDIO_API_URL}/contact/${phone}`, {
+        const identifier = `phone:${phone}`;
+        const response = await axios.get(`${RESPONDIO_API_URL}/contact/${identifier}`, {
           headers: {
             'Authorization': `Bearer ${RESPONDIO_ACCESS_TOKEN}`,
             'Content-Type': 'application/json'
@@ -188,7 +190,9 @@ async function createContact(customer) {
     contactData.phone = phone;
   }
 
-  const response = await axios.post(`${RESPONDIO_API_URL}/contact`, contactData, {
+  // Usar email como identifier
+  const identifier = `email:${customer.EMAIL}`;
+  const response = await axios.post(`${RESPONDIO_API_URL}/contact/${identifier}`, contactData, {
     headers: {
       'Authorization': `Bearer ${RESPONDIO_ACCESS_TOKEN}`,
       'Content-Type': 'application/json'

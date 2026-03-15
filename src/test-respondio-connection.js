@@ -30,32 +30,49 @@ async function testConnection() {
   console.log('');
 
   try {
-    console.log('→ Probando búsqueda de contactos con email test@example.com...');
+    console.log('→ Probando creación de contacto de prueba...');
     
-    const response = await axios.get(`${RESPONDIO_API_URL}/contact/test@example.com`, {
-      headers: {
-        'Authorization': `Bearer ${RESPONDIO_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json'
+    const timestamp = Date.now();
+    const email = `test-${timestamp}@example.com`;
+    const identifier = `email:${email}`;
+    const testContact = {
+      firstName: 'Test',
+      lastName: 'Connection',
+      email: email,
+      phone: '+60123456789'
+    };
+
+    console.log(`  Identifier: ${identifier}`);
+    console.log('');
+
+    const response = await axios.post(
+      `${RESPONDIO_API_URL}/contact/${identifier}`,
+      testContact,
+      {
+        headers: {
+          'Authorization': `Bearer ${RESPONDIO_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
       }
-    });
+    );
 
     console.log('✓ Conexión exitosa!');
     console.log(`  - Status: ${response.status}`);
-    console.log(`  - Contacto encontrado: ${response.data.firstName} ${response.data.lastName}`);
+    console.log(`  - Contacto creado con ID: ${response.data.id}`);
+    console.log(`  - Nombre: ${response.data.firstName} ${response.data.lastName}`);
     console.log('');
     console.log('='.repeat(60));
     console.log('✓ PRUEBA COMPLETADA EXITOSAMENTE');
+    console.log('✓ Tu Access Token es válido y funciona correctamente');
     console.log('='.repeat(60));
+    console.log('');
+    console.log('Puedes verificar el contacto en Respond.io');
 
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.log('⚠ Contacto test@example.com no encontrado (esto es esperado)');
-      console.log('✓ Conexión exitosa! El API responde correctamente');
-      console.log('');
-      console.log('='.repeat(60));
-      console.log('✓ PRUEBA COMPLETADA EXITOSAMENTE');
-      console.log('='.repeat(60));
-      return;
+      console.log('⚠ Endpoint no encontrado (404)');
+      console.log('  Verifica que la URL del API sea correcta');
+      process.exit(1);
     }
 
     console.error('❌ Error de conexión:');

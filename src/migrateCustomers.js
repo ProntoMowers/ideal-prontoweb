@@ -130,6 +130,21 @@ function normalizeFbValue(val) {
   return null;
 }
 
+/**
+ * Valida y normaliza el campo ZIP para que solo pasen códigos postales US
+ * de 5 dígitos (acepta también formato ZIP+4 como '33434-1234', guarda solo los 5 primeros).
+ * Cualquier otro valor (ej. 'PANAM', '', '1234', 'N/A') → null.
+ * Esto es necesario para poder usar uszipcodes en el cálculo de distancias.
+ */
+function normalizeZipValue(val) {
+  if (val === null || val === undefined) return null;
+  const str = String(val).trim();
+  if (/^\d{5}(-\d{4})?$/.test(str)) {
+    return str.slice(0, 5); // Guardar solo los 5 dígitos base
+  }
+  return null; // ZIP inválido → NULL
+}
+
 // Para debug en caso de error de INSERT
 function logFirstWeirdValue(tableName, columns, valuesChunk) {
   for (let r = 0; r < valuesChunk.length; r++) {
@@ -330,14 +345,25 @@ async function migrateCustomers() {
       for (let i = 0; i < fbRows.length; i += mysqlBatchSize) {
         const chunk = fbRows.slice(i, i + mysqlBatchSize);
 
+        let zipsNulled = 0;
         const values = chunk.map(row =>
-          CUSTOMER_COLUMNS.map(col => normalizeFbValue(row[col]))
+          CUSTOMER_COLUMNS.map(col => {
+            if (col === 'ZIP') {
+              const normalized = normalizeZipValue(row[col]);
+              if (normalized === null && row[col] !== null && row[col] !== undefined && String(row[col]).trim() !== '') {
+                zipsNulled++;
+              }
+              return normalized;
+            }
+            return normalizeFbValue(row[col]);
+          })
         );
 
         const mysqlBatchNumber = Math.floor(i / mysqlBatchSize) + 1;
 
         log.info(
-          `💾 [CUSTOMER] Enviando a MySQL lote interno #${mysqlBatchNumber} de Firebird #${fbBatchNumberC} (${values.length} registros)...`
+          `💾 [CUSTOMER] Enviando a MySQL lote interno #${mysqlBatchNumber} de Firebird #${fbBatchNumberC} (${values.length} registros)...` +
+          (zipsNulled > 0 ? ` [⚠ ${zipsNulled} ZIPs inválidos → NULL]` : '')
         );
 
         try {

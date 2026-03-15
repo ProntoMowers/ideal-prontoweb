@@ -3,7 +3,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const partsAvailabilityRoutes = require('./routes/partsAvailability');
+const partsReverseLookupRoutes = require('./routes/partsReverseLookup');
 const returnsRoutes = require('./routes/returns');
+const respondioRoutes = require('./routes/respondio');
 const logger = require('./helpers/logger')('server.log');
 
 const app = express();
@@ -29,14 +31,18 @@ app.get('/health', (req, res) => {
     endpoints: [
       'GET /health',
       'POST /v1/parts/availability/resolve',
-      'POST /v1/returns/submit'
+      'POST /v1/parts/reverse/resolve',
+      'POST /v1/returns/submit',
+      'POST /v1/respondio/contact/upsert'
     ]
   });
 });
 
 // API Routes
 app.use('/', partsAvailabilityRoutes);
+app.use('/', partsReverseLookupRoutes);
 app.use('/', returnsRoutes);
+app.use('/', respondioRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -61,7 +67,9 @@ app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📍 Health check: http://localhost:${PORT}/health`);
   console.log(`📍 Parts Availability: POST http://localhost:${PORT}/v1/parts/availability/resolve`);
+  console.log(`📍 Parts Reverse Lookup: POST http://localhost:${PORT}/v1/parts/reverse/resolve`);
   console.log(`📍 Submit Return: POST http://localhost:${PORT}/v1/returns/submit`);
+  console.log(`📍 Respond.io Upsert Contact: POST http://localhost:${PORT}/v1/respondio/contact/upsert`);
 });
 
 // Graceful shutdown
